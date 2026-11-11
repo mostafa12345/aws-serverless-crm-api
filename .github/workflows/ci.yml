@@ -1,0 +1,51 @@
+name: Serverless CRM CI & Terraform Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  serverless-api-tests:
+    name: Serverless API, WAF & Streams E2E Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install boto3 for AWS SDK Compatibility
+        run: pip install boto3
+
+      - name: Run Unit, WAF, Cognito, Cache & Stream Tests
+        run: ./scripts/test-local.sh
+
+  validate-terraform:
+    name: Terraform Format & Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Check Terraform Formatting
+        run: |
+          cd terraform
+          terraform fmt -check
+
+      - name: Initialize & Validate Terraform
+        run: |
+          cd terraform
+          terraform init -backend=false
+          terraform validate

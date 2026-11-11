@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Serverless CRM | Cognito + API Gateway + Lambda + DynamoDB + WAF</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <div>
+        <h1>AWS Serverless CRM</h1>
+        <p class="subtitle">CloudFront &bull; WAFv2 &bull; Cognito &bull; API Gateway &bull; Lambda &bull; DynamoDB Streams</p>
+      </div>
+    </div>
+    <div class="telemetry-bar">
+      <span id="badge-env" class="badge badge-info">Mode: Initializing...</span>
+      <span id="badge-cache" class="badge badge-neutral">X-Cache: --</span>
+      <span id="badge-trace" class="badge badge-neutral" title="Latest AWS X-Ray Trace ID">X-Ray: --</span>
+      <button id="btn-logout" class="btn btn-secondary hidden">Sign Out</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Auth Card -->
+    <section id="auth-section" class="card auth-card">
+      <div class="tabs">
+        <button id="tab-signin" class="tab active" type="button">Sign In (Cognito)</button>
+        <button id="tab-signup" class="tab" type="button">Create Account</button>
+      </div>
+
+      <form id="auth-form" class="form-grid">
+        <div id="group-name" class="field hidden">
+          <label for="auth-name">Full Name</label>
+          <input id="auth-name" type="text" placeholder="Mostafa Ahmed" />
+        </div>
+        <div class="field">
+          <label for="auth-email">Email Address</label>
+          <input id="auth-email" type="email" required placeholder="mostafa@example.com" />
+        </div>
+        <div class="field">
+          <label for="auth-password">Password</label>
+          <input id="auth-password" type="password" required minlength="6" placeholder="Min 6 characters" />
+        </div>
+        <button id="auth-submit" class="btn btn-primary" type="submit">Sign In with Cognito</button>
+      </form>
+
+      <div id="hosted-ui-box" class="hosted-ui hidden">
+        <p>Production AWS Cognito Hosted UI is configured:</p>
+        <a id="hosted-ui-link" class="btn btn-primary" href="#">Sign In via Cognito Hosted UI</a>
+      </div>
+
+      <div id="auth-message" class="status-msg hidden"></div>
+    </section>
+
+    <!-- Main Dashboard -->
+    <section id="app-section" class="dashboard hidden">
+      <div class="grid-two">
+        <!-- Create / Edit Customer Form -->
+        <div class="card">
+          <h2 id="form-title">Add Customer Record</h2>
+          <form id="customer-form" class="form-grid">
+            <input id="cust-id" type="hidden" />
+            <div class="field">
+              <label for="cust-name">Full Name *</label>
+              <input id="cust-name" type="text" required placeholder="Sara Hassan" />
+            </div>
+            <div class="field">
+              <label for="cust-email">Email *</label>
+              <input id="cust-email" type="email" required placeholder="sara@acme.io" />
+            </div>
+            <div class="field">
+              <label for="cust-company">Company *</label>
+              <input id="cust-company" type="text" required placeholder="Acme Cloud Corp" />
+            </div>
+            <div class="row-two">
+              <div class="field">
+                <label for="cust-tier">Plan Tier (GSI)</label>
+                <select id="cust-tier">
+                  <option value="starter">Starter</option>
+                  <option value="growth">Growth</option>
+                  <option value="enterprise">Enterprise</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="cust-status">Account Status</label>
+                <select id="cust-status">
+                  <option value="active">Active</option>
+                  <option value="pending">Pending</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="cust-phone">Phone</label>
+              <input id="cust-phone" type="text" placeholder="+20 100 000 0000" />
+            </div>
+            <div class="actions">
+              <button type="submit" class="btn btn-primary" id="save-btn">Save Record</button>
+              <button type="button" class="btn btn-secondary hidden" id="cancel-edit-btn">Cancel</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Audit Log Card (DynamoDB Streams) -->
+        <div class="card">
+          <div class="card-header">
+            <h2>DynamoDB Streams Audit Log</h2>
+            <button id="refresh-audit-btn" class="btn btn-small">Refresh</button>
+          </div>
+          <p class="hint">Live stream events captured asynchronously by <code>stream_processor</code> Lambda.</p>
+          <ul id="audit-list" class="audit-list">
+            <li class="empty">No stream events recorded yet.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Customers Table Card -->
+      <div class="card">
+        <div class="card-header">
+          <h2>Customer Records (DynamoDB + GSIs)</h2>
+          <div class="filters">
+            <label for="filter-tier">Filter by Tier:</label>
+            <select id="filter-tier">
+              <option value="">All Tiers (Scan)</option>
+              <option value="enterprise">Enterprise (GSI Query)</option>
+              <option value="growth">Growth (GSI Query)</option>
+              <option value="starter">Starter (GSI Query)</option>
+            </select>
+            <button id="refresh-customers-btn" class="btn btn-small">Reload</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Company</th>
+                <th>Tier</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="customers-tbody">
+              <tr><td colspan="6" class="empty">Loading records...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

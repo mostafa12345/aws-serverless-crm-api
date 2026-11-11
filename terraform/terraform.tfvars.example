@@ -1,0 +1,7 @@
+aws_region        = "us-east-1"
+project_name      = "serverless-crm"
+environment       = "prod"
+waf_rate_limit    = 1000
+blocked_countries = ["KP", "SY"]
+enable_api_cache  = true
+alert_email       = ""
