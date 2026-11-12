@@ -125,7 +125,7 @@ def _handle_list_customers(event: Dict[str, Any], store: Any, trace_id: str) -> 
         200,
         {"customers": result["items"], "count": len(result["items"]), "nextToken": result.get("nextToken")},
         trace_id,
-        cache_control="public, max-age=30",
+        cache_control="no-store",
     )
 
 
@@ -270,3 +270,4 @@ def lambda_handler(event: Dict[str, Any], context: Any = None) -> Dict[str, Any]
     except Exception as exc:  # noqa: BLE001 - safe top-level API boundary
         log_structured("ERROR", "customers-api", "Unhandled exception", trace_id, error=str(exc))
         return _response(500, {"error": "Internal server error", "traceId": trace_id}, trace_id)
+

@@ -260,9 +260,25 @@ resource "aws_api_gateway_method_settings" "all_methods" {
     logging_level          = "INFO"
     throttling_burst_limit = 50
     throttling_rate_limit  = 100
+    caching_enabled        = false
+  }
+}
+
+resource "aws_api_gateway_method_settings" "customer_item_cache" {
+  rest_api_id = aws_api_gateway_rest_api.crm_api.id
+  stage_name  = aws_api_gateway_stage.prod.stage_name
+  method_path = "~1api~1customers~1{id}/GET"
+
+  settings {
+    metrics_enabled        = true
+    logging_level          = "INFO"
+    throttling_burst_limit = 50
+    throttling_rate_limit  = 100
     caching_enabled        = var.enable_api_cache
     cache_ttl_in_seconds   = 60
   }
+
+  depends_on = [aws_api_gateway_method_settings.all_methods]
 }
 
 resource "aws_api_gateway_usage_plan" "standard" {
@@ -291,3 +307,4 @@ resource "aws_lambda_permission" "apigw_invoke" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_api_gateway_rest_api.crm_api.execution_arn}/*/*"
 }
+

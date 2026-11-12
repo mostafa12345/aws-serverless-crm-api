@@ -3,6 +3,11 @@ output "cloudfront_url" {
   value       = "https://${aws_cloudfront_distribution.cdn.domain_name}"
 }
 
+output "cloudfront_distribution_id" {
+  description = "CloudFront distribution ID for cache invalidation"
+  value       = aws_cloudfront_distribution.cdn.id
+}
+
 output "api_gateway_invoke_url" {
   description = "Direct regional API Gateway stage invoke URL"
   value       = aws_api_gateway_stage.prod.invoke_url
@@ -42,3 +47,4 @@ output "waf_web_acl_arn" {
   description = "CloudFront WAFv2 Web ACL ARN"
   value       = aws_wafv2_web_acl.edge_waf.arn
 }
+
